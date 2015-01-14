@@ -8,7 +8,26 @@
 
 ############################################################
 
+#history initialization
+init<-function(startPoints)
+{
+  #return random harmonics for initialization purposes
+  return(initializedHistory)
+}
 
+#function checking algorithm termination conditions
+termination<-function(history,model)
+{
+  #return true if termination conditions are met
+  return(false)
+}
+
+#function evaluation point usefulness for the algorithm
+evaluation<-function(point)
+{
+  #return the score of the point
+  return(score)
+}
 
 
 #### TO BE DEFINED BY THE USER
