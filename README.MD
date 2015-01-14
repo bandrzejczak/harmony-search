@@ -2,6 +2,8 @@
 
 *Implementation of a great search algorithm written in R*
 
+[Best explanation of the algorithm with example implementation in CoffeeScript](http://harry.me/blog/2011/07/05/neat-algorithms-harmony-search/)
+
 ## Usage
 
 There are two main files:
