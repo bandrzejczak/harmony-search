@@ -15,6 +15,13 @@ init<-function(startPoints)
   return(initializedHistory)
 }
 
+#model initialization
+initModel<-function(history)
+{
+  initializedModel <- list(HMCR=0.95, PAR=0.1)
+  return(initializedModel)
+}
+
 #function checking algorithm termination conditions
 termination<-function(history,model)
 {
