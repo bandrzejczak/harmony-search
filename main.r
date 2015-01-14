@@ -18,15 +18,25 @@ init<-function(startPoints)
 #model initialization
 initModel<-function(history)
 {
-  initializedModel <- list(HMCR=0.95, PAR=0.1)
+  initializedModel <- list(HMCR=0.95, PAR=0.1, targetQuality=0.8)
+  initializedModel$bestPoint <- history[[1]]
+  initializedModel$worstPoint <- history[[1]]
+  for (i in 2:length(history)) 
+  {
+    actualQuality <- history[[i]]$quality
+    if(actualQuality > initializedModel$bestPoint$quality) {
+      initializedModel$bestPoint <- history[[i]]
+    } else if(actualQuality < initializedModel$worstPoint$quality) {
+      initializedModel$worstPoint <- history[[i]]
+    }
+  }
   return(initializedModel)
 }
 
 #function checking algorithm termination conditions
 termination<-function(history,model)
 {
-  #return true if termination conditions are met
-  return(false)
+    return(model$targetQuality <= model$bestPoint$quality)
 }
 
 #function evaluation point usefulness for the algorithm
