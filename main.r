@@ -33,7 +33,7 @@ generateRandomPoints<-function(length, instrumentsNumber, minPitch, maxPitch)
 #model initialization
 initModel<-function(history)
 {
-  initializedModel <- list(HMCR=0.95, PAR=0.1, targetQuality=0.8, maxPitch=5.12, minPitch=-5.12, instrumentsNumber=2, historyMemorySize=10)
+  initializedModel <- list(HMCR=0.95, PAR=0.1, targetQuality=0.1, maxPitch=100, minPitch=-100, maxPitchChange=5, instrumentsNumber=2, historyMemorySize=10)
   initializedModel$bestHarmonies <- history
   initializedModel$bestPoint <- getBest(history)
   initializedModel$worstPoint <- getWorst(history)
@@ -49,8 +49,8 @@ initModel<-function(history)
   return(initializedModel)
 }
 
-getBest<-function(points) getSpecificPoint(points, function(actual, chosen) actual>chosen)$value
-getWorst<-function(points) getSpecificPoint(points, function(actual, chosen) actual<chosen)$value
+getBest<-function(points) getSpecificPoint(points, function(actual, chosen) actual<chosen)$value
+getWorst<-function(points) getSpecificPoint(points, function(actual, chosen) actual>chosen)$value
 
 getSpecificPoint<-function(points, characteristic)
 {
@@ -65,7 +65,7 @@ getSpecificPoint<-function(points, characteristic)
 }
 
 withoutWorst<-function(points) {
-  points[[getSpecificPoint(points, function(a,b) a<b)$index]] <- NULL
+  points[[getSpecificPoint(points, function(a,b) a>b)$index]] <- NULL
   return(points)
 }
 
@@ -133,11 +133,13 @@ adjustPitch<-function(newPitch, model)
   {
     if(runif(1,0,1) < 0.5) #pitch down
     {
-      newPitch <- newPitch + runif(1, model$minPitch - newPitch, 0)
+      newPitch <- newPitch - runif(1, 0, model$maxPitchChange)
     } else #pitch up
     {
-      newPitch <- newPitch + runif(1, 0, model$maxPitch - newPitch)
+      newPitch <- newPitch + runif(1, 0, model$maxPitchChange)
     }
+    if(newPitch > model$maxPitch) newPitch <- model$maxPitch
+    if(newPitch < model$minPitch) newPitch <- model$minPitch
   }
   return(newPitch)
 }
@@ -151,7 +153,7 @@ modelUpdate<-function(newPoint, oldModel, evaluate)
    #and then return
    newModel <- oldModel
    newPoint$quality <- evaluate(newPoint$coordinates)
-   if(newPoint$quality > oldModel$worstPoint$quality) 
+   if(newPoint$quality < oldModel$worstPoint$quality) 
    {
      newModel$bestHarmonies <- c(withoutWorst(oldModel$bestHarmonies), list(newPoint))
      newModel$bestPoint <- getBest(newModel$bestHarmonies)
@@ -170,7 +172,7 @@ aggregatedOperator<-function(history, oldModel, evaluate)
 
    selectedPoints<-selection(history, oldModel)
    newModel<-modelUpdate(selectedPoints, oldModel, evaluate)
-   return (list(newPoints=selectedPoints,newModel=newModel))
+   return (list(newPoints=evaluateList(list(selectedPoints), evaluate),newModel=newModel))
 }
 
 #The main loop of a metaheuristic.
@@ -219,4 +221,4 @@ evaluateList<-function(points,evaluation)
 ####  THAT'S ALL FOLKS
 
 #Run me:
-metaheuristicRun(init, generateRandomPoints(10, 2, -10, 10), termination, evaluation)
+#metaheuristicRun(init, generateRandomPoints(10, 2, -100, 100), termination, evaluation)
