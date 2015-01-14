@@ -49,18 +49,24 @@ initModel<-function(history)
   return(initializedModel)
 }
 
-getBest<-function(points) getSpecificPoint(points, function(actual, chosen) actual>chosen)
-getWorst<-function(points) getSpecificPoint(points, function(actual, chosen) actual<chosen)
+getBest<-function(points) getSpecificPoint(points, function(actual, chosen) actual>chosen)$value
+getWorst<-function(points) getSpecificPoint(points, function(actual, chosen) actual<chosen)$value
 
 getSpecificPoint<-function(points, characteristic)
 {
-  chosenPoint <- points[[1]]
+  chosenPoint <- list(value=points[[1]], index=1)
   for (i in 2:length(points)) {
-    if(characteristic(points[[i]]$quality,chosenPoint$quality)){
-      chosenPoint <- points[[i]]
+    if(characteristic(points[[i]]$quality,chosenPoint$value$quality)){
+      chosenPoint$value <- points[[i]]
+      chosenPoint$index <- i
     }
   }
   return(chosenPoint)
+}
+
+withoutWorst<-function(points) {
+  points[[getSpecificPoint(points, function(a,b) a<b)$index]] <- NULL
+  return(points)
 }
 
 
