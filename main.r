@@ -92,7 +92,7 @@ selection<-function(history, model)
      #append random value
      newHarmony$coordinates <- c(newHarmony$coordinates, runif(1,model$minPitch, model$maxPitch))
    }
-   return(selectedPoints)
+   return(newHarmony)
 }
 
 #update of a model based on a LIST of points
