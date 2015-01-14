@@ -11,8 +11,23 @@
 #history initialization
 init<-function(startPoints)
 {
+  initializedHistory<-list()
+  for(i in 1:length(startPoints))
+  {
+    newPoint<-list(coordinates=startPoints[[i]])
+    initializedHistory<-c(initializedHistory,list(newPoint))
+  }
   #return random harmonics for initialization purposes
   return(initializedHistory)
+}
+
+generateRandomPoints<-function(length, instrumentsNumber, minPitch, maxPitch)
+{
+  randomPoints<-list()
+  for(i in 1:length)
+    randomPoints<-c(randomPoints,list(runif(instrumentsNumber, minPitch, maxPitch)))
+  #return random harmonics for initialization purposes
+  return(randomPoints)
 }
 
 #model initialization
