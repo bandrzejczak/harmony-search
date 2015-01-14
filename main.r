@@ -42,7 +42,10 @@ termination<-function(history,model)
 #function evaluation point usefulness for the algorithm
 evaluation<-function(point)
 {
-  #return the score of the point
+  A <- 10
+  score <- A * length(point)
+  for (i in 1:length(point))
+    score += point[[i] * point[[i]] - A * cos(2 * pi * point[[i])
   return(score)
 }
 
