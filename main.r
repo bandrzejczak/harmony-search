@@ -105,7 +105,7 @@ selection<-function(history, model)
   newHarmony <- list(coordinates=list())  
   for (i in 1:model$instrumentsNumber) 
   {   
-   newPitch <- adjustPitch(createPitch(model, i), model) 
+   newPitch <- adjustPitch(createPitch(model, i), model)
    newHarmony$coordinates <- c(newHarmony$coordinates, newPitch) 
   }
    return(newHarmony)
@@ -116,8 +116,7 @@ createPitch<-function(model, i)
   if(runif(1, 0, 1) < model$HMCR) {
     #use memory to create harmony
     #get random harmony
-    writeLines(toString(length(model$bestHarmonies)))
-    randomHarmony <- model$bestHarmonies[[round(runif(1, 1, model$historyMemorySize)[[1]])]]
+    randomHarmony <- model$bestHarmonies[[round(runif(1, 1, model$historyMemorySize))]]
     newPitch <- randomHarmony$coordinates[[i]]
   } else 
   {
@@ -154,7 +153,9 @@ modelUpdate<-function(newPoint, oldModel, evaluate)
    newPoint$quality <- evaluate(newPoint$coordinates)
    if(newPoint$quality > oldModel$worstPoint$quality) 
    {
-     newModel$bestHarmonies <- c(withoutWorst(oldModel$bestHarmonies), newPoint)
+     newModel$bestHarmonies <- c(withoutWorst(oldModel$bestHarmonies), list(newPoint))
+     newModel$bestPoint <- getBest(newModel$bestHarmonies)
+     newModel$worstPoint <- getWorst(newModel$bestHarmonies)
    }
    return (newModel)
 }
