@@ -97,35 +97,59 @@ selection<-function(history, model)
 {
   #create new, empty harmony
   newHarmony <- list(coordinates=list())  
-  for (i in 1:model$instrumentsNumber)
-   if(rinif(1, 0, 1) < model$HMCR) {
-     #use memory to create harmony
-     #get random harmony
-     randomHarmony <- model$bestHarmonies[[runif(1, 1, model$historyMemorySize)]]
-     newHarmony$coordinates <- c(newHarmony$coordinates, randomHarmony$coordinates[[i]])
-   } else {
-     #append random value
-     newHarmony$coordinates <- c(newHarmony$coordinates, runif(1,model$minPitch, model$maxPitch))
-   }
+  for (i in 1:model$instrumentsNumber) 
+  {   
+   newPitch <- adjustPitch(createPitch(model), model) 
+   newHarmony$coordinates <- c(newHarmony$coordinates, newPitch) 
+  }
    return(newHarmony)
+}
+
+createPitch<-function() 
+{
+  if(runif(1, 0, 1) < model$HMCR) {
+    #use memory to create harmony
+    #get random harmony
+    randomHarmony <- model$bestHarmonies[[runif(1, 1, model$historyMemorySize)]]
+    newPitch <- randomHarmony$coordinates[[i]]
+  } else 
+  {
+    #append random value
+    newPitch <- runif(1,model$minPitch, model$maxPitch)
+  }
+  return(newPitch)
+}
+
+adjustPitch<-function(newPitch, model)
+{
+  #adjust the pitch
+  if(runif(1,0,1) < model$PAR) 
+  {
+    if(runif(1,0,1) < 0.5) #pitch down
+    {
+      newPitch <- newPitch + runif(1, model$minPitch - newPitch, 0)
+    } else #pitch up
+    {
+      newPitch <- newPitch + runif(1, 0, model$maxPitch - newPitch)
+    }
+  }
+  return(newPitch)
 }
 
 #update of a model based on a LIST of points
 #to be defined
-modelUpdate<-function(selectedPoints, oldModel)
+modelUpdate<-function(newPoint, oldModel)
 {
    #take a look at the list of selectedPoints and 
    #on the current state of the model, update it 
    #and then return
+   newModel <- oldModel
+   newPoint$quality <- evaluate(newPoint)
+   if(newPoint$quality > oldModel$worstPoint$quality) 
+   {
+     newModel$bestHarmonies <- c(withoutWorst(oldModel$bestHarmonies), newHarmony)
+   }
    return (newModel)
-}
-
-#generation of a LIST of new points
-#to be defined
-variation<-function(selectedPoints, model)
-{
-   #generate the list of newPoints and then  
-   return (newPoints)
 }
 
 #####  THE METAHEURISTIC "ENGINE"
@@ -138,8 +162,7 @@ aggregatedOperator<-function(history, oldModel)
 
    selectedPoints<-selection(history, oldModel)
    newModel<-modelUpdate(selectedPoints, oldModel)
-   newPoints<-variation(selectedPoints, newModel)
-   return (list(newPoints=newPoints,newModel=newModel))
+   return (list(newPoints=selectedPoints,newModel=newModel))
 }
 
 #The main loop of a metaheuristic.
@@ -155,7 +178,7 @@ metaheuristicRun<-function(initialization, startPoints, termination, evaluation)
    while (!termination(history,model))
    {
       aa<-aggregatedOperator(history, model)
-      aa$newPoints<-evaluateList(aa$newPoints, evaluation)
+      #aa$newPoints<-evaluateList(aa$newPoints, evaluation)
       history<-historyPush(history,aa$newPoints)
       model<-aa$newModel
    }
