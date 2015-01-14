@@ -49,6 +49,21 @@ initModel<-function(history)
   return(initializedModel)
 }
 
+getBest<-function(points) getSpecificPoint(points, function(actual, chosen) actual>chosen)
+getWorst<-function(points) getSpecificPoint(points, function(actual, chosen) actual<chosen)
+
+getSpecificPoint<-function(points, characteristic)
+{
+  chosenPoint <- points[[1]]
+  for (i in 2:length(points)) {
+    if(characteristic(points[[i]]$quality,chosenPoint$quality)){
+      chosenPoint <- points[[i]]
+    }
+  }
+  return(chosenPoint)
+}
+
+
 #function checking algorithm termination conditions
 termination<-function(history,model)
 {
@@ -135,7 +150,7 @@ aggregatedOperator<-function(history, oldModel)
 metaheuristicRun<-function(initialization, startPoints, termination, evaluation)
 {
    history<-initialization(startPoints)
-   history<-evaluateList(history)
+   history<-evaluateList(history, evaluation)
    model<-initModel(history)
    while (!termination(history,model))
    {
@@ -171,3 +186,6 @@ evaluateList<-function(points,evaluation)
 
 
 ####  THAT'S ALL FOLKS
+
+#Run me:
+#metaheuristicRun(init, generateRandomPoints(10, 2, -10, 10), termination, evaluation)
