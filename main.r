@@ -33,9 +33,10 @@ generateRandomPoints<-function(length, instrumentsNumber, minPitch, maxPitch)
 #model initialization
 initModel<-function(history)
 {
-  initializedModel <- list(HMCR=0.95, PAR=0.1, targetQuality=0.8)
-  initializedModel$bestPoint <- history[[1]]
-  initializedModel$worstPoint <- history[[1]]
+  initializedModel <- list(HMCR=0.95, PAR=0.1, targetQuality=0.8, maxPitch=5.12, minPitch=-5.12, instrumentsNumber=2, historyMemorySize=10)
+  initializedModel$bestHarmonies <- list(history)
+  initializedModel$bestPoint <- getBest(history)
+  initializedModel$worstPoint <- getWorst(history)
   for (i in 2:length(history)) 
   {
     actualQuality <- history[[i]]$quality
@@ -55,12 +56,20 @@ termination<-function(history,model)
 }
 
 #function evaluation point usefulness for the algorithm
+#evaluation<-function(point)
+#{
+#  A <- 10
+#  score <- A * length(point)
+#  for (i in 1:length(point))
+#    score <- score + point[[i] * point[[i]] - A * cos(2 * pi * point[[i]])
+#  return(score)
+#}
+
 evaluation<-function(point)
 {
-  A <- 10
-  score <- A * length(point)
+  score <- 0
   for (i in 1:length(point))
-    score += point[[i] * point[[i]] - A * cos(2 * pi * point[[i])
+    score <- score + point[[i] * point[[i]]
   return(score)
 }
 
@@ -71,8 +80,18 @@ evaluation<-function(point)
 #to be defined
 selection<-function(history, model)
 {
-   #select a number of points from the history using the 
-   #method's parameters and the current state of the model
+  #create new, empty harmony
+  newHarmony <- list(coordinates=list())  
+  for (i in 1:model$instrumentsNumber)
+   if(rinif(1, 0, 1) < model$HMCR) {
+     #use memory to create harmony
+     #get random harmony
+     randomHarmony <- model$bestHarmonies[[runif(1, 1, model$historyMemorySize)]]
+     newHarmony$coordinates <- c(newHarmony$coordinates, randomHarmony$coordinates[[i]])
+   } else {
+     #append random value
+     newHarmony$coordinates <- c(newHarmony$coordinates, runif(1,model$minPitch, model$maxPitch))
+   }
    return(selectedPoints)
 }
 
