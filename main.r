@@ -34,7 +34,7 @@ generateRandomPoints<-function(length, instrumentsNumber, minPitch, maxPitch)
 initModel<-function(history)
 {
   initializedModel <- list(HMCR=0.95, PAR=0.1, targetQuality=0.8, maxPitch=5.12, minPitch=-5.12, instrumentsNumber=2, historyMemorySize=10)
-  initializedModel$bestHarmonies <- list(history)
+  initializedModel$bestHarmonies <- history
   initializedModel$bestPoint <- getBest(history)
   initializedModel$worstPoint <- getWorst(history)
   for (i in 2:length(history)) 
@@ -73,7 +73,7 @@ withoutWorst<-function(points) {
 #function checking algorithm termination conditions
 termination<-function(history,model)
 {
-    return(model$targetQuality <= model$bestPoint$quality)
+    return(model$targetQuality >= model$bestPoint$quality)
 }
 
 #function evaluation point usefulness for the algorithm
@@ -90,7 +90,7 @@ evaluation<-function(point)
 {
   score <- 0
   for (i in 1:length(point))
-    score <- score + point[[i] * point[[i]]
+    score <- score + point[[i]] * point[[i]]
   return(score)
 }
 
@@ -105,18 +105,19 @@ selection<-function(history, model)
   newHarmony <- list(coordinates=list())  
   for (i in 1:model$instrumentsNumber) 
   {   
-   newPitch <- adjustPitch(createPitch(model), model) 
+   newPitch <- adjustPitch(createPitch(model, i), model) 
    newHarmony$coordinates <- c(newHarmony$coordinates, newPitch) 
   }
    return(newHarmony)
 }
 
-createPitch<-function() 
+createPitch<-function(model, i) 
 {
   if(runif(1, 0, 1) < model$HMCR) {
     #use memory to create harmony
     #get random harmony
-    randomHarmony <- model$bestHarmonies[[runif(1, 1, model$historyMemorySize)]]
+    writeLines(toString(length(model$bestHarmonies)))
+    randomHarmony <- model$bestHarmonies[[round(runif(1, 1, model$historyMemorySize)[[1]])]]
     newPitch <- randomHarmony$coordinates[[i]]
   } else 
   {
@@ -144,16 +145,16 @@ adjustPitch<-function(newPitch, model)
 
 #update of a model based on a LIST of points
 #to be defined
-modelUpdate<-function(newPoint, oldModel)
+modelUpdate<-function(newPoint, oldModel, evaluate)
 {
    #take a look at the list of selectedPoints and 
    #on the current state of the model, update it 
    #and then return
    newModel <- oldModel
-   newPoint$quality <- evaluate(newPoint)
+   newPoint$quality <- evaluate(newPoint$coordinates)
    if(newPoint$quality > oldModel$worstPoint$quality) 
    {
-     newModel$bestHarmonies <- c(withoutWorst(oldModel$bestHarmonies), newHarmony)
+     newModel$bestHarmonies <- c(withoutWorst(oldModel$bestHarmonies), newPoint)
    }
    return (newModel)
 }
@@ -163,11 +164,11 @@ modelUpdate<-function(newPoint, oldModel)
 #An aggregated operator takes the list of historical points anf the model
 #and generates the list of new points
 #A "side effect" is the model update
-aggregatedOperator<-function(history, oldModel)
+aggregatedOperator<-function(history, oldModel, evaluate)
 {
 
    selectedPoints<-selection(history, oldModel)
-   newModel<-modelUpdate(selectedPoints, oldModel)
+   newModel<-modelUpdate(selectedPoints, oldModel, evaluate)
    return (list(newPoints=selectedPoints,newModel=newModel))
 }
 
@@ -183,7 +184,7 @@ metaheuristicRun<-function(initialization, startPoints, termination, evaluation)
    model<-initModel(history)
    while (!termination(history,model))
    {
-      aa<-aggregatedOperator(history, model)
+      aa<-aggregatedOperator(history, model, evaluation)
       #aa$newPoints<-evaluateList(aa$newPoints, evaluation)
       history<-historyPush(history,aa$newPoints)
       model<-aa$newModel
@@ -217,4 +218,4 @@ evaluateList<-function(points,evaluation)
 ####  THAT'S ALL FOLKS
 
 #Run me:
-#metaheuristicRun(init, generateRandomPoints(10, 2, -10, 10), termination, evaluation)
+metaheuristicRun(init, generateRandomPoints(10, 2, -10, 10), termination, evaluation)
