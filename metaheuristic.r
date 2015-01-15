@@ -40,7 +40,8 @@ initModel<-function(history, config)
    PAR=config$PAR,
    minPitch=config$minPitch,
    maxPitch=config$maxPitch,
-   maxPitchChange=config$maxPitchChange
+   maxPitchChange=config$maxPitchChange,
+   startTime=proc.time()
   )
   initializedModel$bestHarmonies <- history
   initializedModel$bestPoint <- getBest(history, config$better)
